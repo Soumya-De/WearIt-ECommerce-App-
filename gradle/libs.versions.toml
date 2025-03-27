@@ -1,6 +1,6 @@
 [versions]
 accompanistPagerIndicators = "0.32.0"
-agp = "8.8.2"
+agp = "8.9.1"
 bottombar = "1.0.1"
 checkout = "1.6.41"
 coilCompose = "2.6.0"

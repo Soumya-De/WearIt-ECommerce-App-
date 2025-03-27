@@ -48,7 +48,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
-    // Jetpack Compose BOM
+    // Jetpack Compose BOM (Manages versions automatically)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.ui)
     implementation(libs.ui.graphics)
@@ -64,30 +64,27 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 
-    // Hilt Dependency Injection
-    implementation(libs.dagger.hilt.android) // ✅ Ensure correct version
-    ksp(libs.hilt.android.compiler) // ✅ Use KSP instead of kapt
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    // ✅ Hilt Dependency Injection (Using KSP instead of KAPT)
+    implementation(libs.dagger.hilt.android) // Hilt Core
+    ksp(libs.hilt.android.compiler) // Hilt Compiler (KSP)
+    implementation(libs.androidx.hilt.navigation.compose) // Hilt for Jetpack Compose
 
-    // Coil (Image Loading)
+    // ✅ Coil (Image Loading for Jetpack Compose)
     implementation(libs.coil.compose)
 
-    // Navigation Compose
+    // ✅ Navigation Compose (Jetpack Navigation Component)
     implementation(libs.androidx.navigation.compose)
 
-    // Kotlinx Serialization
+    // ✅ Kotlinx Serialization (For JSON Parsing)
     implementation(libs.kotlinx.serialization.json)
 
-    // Accompanist Pager (Stable Version)
+    // ✅ Accompanist Pager (For ViewPager in Jetpack Compose)
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
 
-    // Razorpay (Payment Gateway)
+    // ✅ Razorpay (Payment Gateway Integration)
     implementation(libs.checkout)
 
-    // Custom Bottom Navigation Bar
+    // ✅ Custom Bottom Navigation Bar (Animated Bottom Navigation)
     implementation(libs.bottombar)
 }
