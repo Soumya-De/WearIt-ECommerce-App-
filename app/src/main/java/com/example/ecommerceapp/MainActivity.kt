@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.ecommerceapp.ui.theme.ECommerceAppTheme
-import com.example.e_commerceapp.presentation.SignUpScreen
+import com.example.ecommerceapp.presentation.LoginScreenUI
 
 
 class MainActivity : ComponentActivity() {
@@ -14,7 +14,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ECommerceAppTheme {
-                SignUpScreen()
+                LoginScreenUI()
+
             }
         }
     }
