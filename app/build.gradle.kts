@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp) // ✅ Use alias for KSP
     id("com.google.dagger.hilt.android") // ✅ Apply Hilt plugin in app module
     kotlin("plugin.serialization") version "2.0.0"
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -54,6 +55,9 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     // Testing dependencies
     testImplementation(libs.junit)
