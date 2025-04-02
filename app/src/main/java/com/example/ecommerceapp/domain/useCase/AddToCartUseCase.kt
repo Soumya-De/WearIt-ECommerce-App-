@@ -7,7 +7,7 @@ import com.example.ecommerceapp.domain.models.CartDataModels
 import kotlinx.coroutines.flow.Flow
 
 class AddToCartUseCase @Inject constructor(private val repo: Repo) {
-    fun addTOCart(cartDataModels: CartDataModels): Flow<ResultState<String>> {
+    fun addToCart(cartDataModels: CartDataModels): Flow<ResultState<String>> {
         return repo.addToCart(cartDataModels)
     }
 }

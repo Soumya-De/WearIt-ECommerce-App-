@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class AddToFavUseCase @Inject constructor(private val repo: Repo) {
-    fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> {
+    fun addToFav(productDataModels: ProductDataModels): Flow<ResultState<String>> {
         return repo.addTOFav(productDataModels)
     }
 
