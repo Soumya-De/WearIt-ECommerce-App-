@@ -7,6 +7,6 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ProfilesScreenUI(viewModel: ECommerceAppViewModel = hiltViewModel(), navController: NavController, firebaseAuth: FirebaseAuth) {
+fun ProfilesScreenUI( navController: NavController, firebaseAuth: FirebaseAuth) {
 
 }
