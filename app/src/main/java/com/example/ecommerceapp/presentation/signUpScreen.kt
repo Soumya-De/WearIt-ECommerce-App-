@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.ecommerceapp.R
+import com.example.ecommerceapp.domain.models.UserData
 import com.example.ecommerceapp.presentation.Navigation.Routes
 import com.example.ecommerceapp.presentation.Navigation.SubNavigation
 import com.example.ecommerceapp.presentation.Utils.CustomTextField
@@ -138,6 +139,17 @@ fun SignUpScreen(navController: NavController, viewModel: ECommerceAppViewModel 
                 onClick = {
                     if (firstname.isNotEmpty() && lastname.isNotEmpty() && email.isNotEmpty() && phoneNumber.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                         if (password == confirmPassword) {
+
+                            val userData = UserData(
+                                firstName = firstname,
+                                lastName = lastname,
+                                phoneNumber = phoneNumber,
+                                email = email,
+                                password = password
+                            )
+
+                            viewModel.createUser(userData)
+
                             Toast.makeText(context, "Sign Up Successful", Toast.LENGTH_SHORT).show()
                         } else {
                             Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT)

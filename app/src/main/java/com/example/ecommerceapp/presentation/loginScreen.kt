@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.ecommerceapp.R
+import com.example.ecommerceapp.domain.models.UserData
 import com.example.ecommerceapp.presentation.Navigation.Routes
 import com.example.ecommerceapp.presentation.Utils.SuccessAlertDialog
 import com.example.ecommerceapp.presentation.Navigation.SubNavigation
@@ -124,6 +125,17 @@ fun LoginScreenUI(
             Button(
                 onClick = {
                     if (email.isNotBlank() && password.isNotBlank()) {
+
+                        val userData = UserData(
+                            firstName = "",
+                            lastName = "",
+                            phoneNumber = "",
+                            email = email,
+                            password = password
+                        )
+
+                        viewModel.loginUser(userData)
+
                         Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_SHORT)
