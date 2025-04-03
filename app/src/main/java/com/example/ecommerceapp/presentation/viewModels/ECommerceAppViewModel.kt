@@ -32,9 +32,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-
+@HiltViewModel
 class ECommerceAppViewModel @Inject constructor(
     private val getAllProductUseCase: GetAllProductUseCase,
     private val getUserUseCase: GetUserUseCase,

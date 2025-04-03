@@ -1,5 +1,6 @@
 package com.example.ecommerceapp.presentation.Navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -82,7 +83,7 @@ fun App(
         BottomNavItem("Profile", Icons.Default.Person, unselectedIcon = Icons.Outlined.Person)
 
     )
-    var startScreen = if (firebaseAuth.currentUser != null) {
+    var startScreen = if (firebaseAuth.currentUser == null) {
         SubNavigation.LoginSignUpScreen
     } else {
         SubNavigation.MainHomeScreen

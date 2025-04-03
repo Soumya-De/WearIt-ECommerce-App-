@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.ecommerceapp.R
+import com.example.ecommerceapp.presentation.Navigation.Routes
 import com.example.ecommerceapp.presentation.Utils.SuccessAlertDialog
 import com.example.ecommerceapp.presentation.Navigation.SubNavigation
 import com.example.ecommerceapp.presentation.Utils.CustomTextField
@@ -146,7 +147,9 @@ fun LoginScreenUI(
                     .padding(vertical = 1.dp)
             ) {
                 Text("Don't have an account?")
-                TextButton(onClick = { /*TODO*/ }) {
+                TextButton(onClick = {
+                    navController.navigate(Routes.SignUpScreen)
+                }) {
                     Text(text = "Sign Up", color = colorResource(id = R.color.teal_200))
                 }
             }
