@@ -453,7 +453,7 @@ class ECommerceAppViewModel @Inject constructor(
                         _userProfileImageState.value =
                             _userProfileImageState.value.copy(
                                 isLoading = false,
-                                imageUrl = it.data
+                                userData = it.data
                             )
                     }
                 }
@@ -647,7 +647,7 @@ data class UpdateScreenState(
 
 data class UploadUserProfileImageState(
     val isLoading: Boolean = false,
-    val imageUrl: String? = null,
+    val userData: String? = null,
     val errorMessages: String? = null
 )
 
