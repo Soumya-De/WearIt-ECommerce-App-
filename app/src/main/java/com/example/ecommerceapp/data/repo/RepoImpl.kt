@@ -21,10 +21,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
+
 class RepoImpl @Inject constructor(
     var firebaseAuth: FirebaseAuth, var firebaseFirestore: FirebaseFirestore
 ) : Repo {
-    override fun RegisterUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>> = callbackFlow {
+    override fun RegisterUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseAuth.createUserWithEmailAndPassword(userData.email, userData.password)
                 .addOnCompleteListener {
@@ -52,7 +54,8 @@ class RepoImpl @Inject constructor(
             }
         }
 
-    override fun LoginUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>> = callbackFlow {
+    override fun LoginUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseAuth.signInWithEmailAndPassword(userData.email, userData.password)
                 .addOnCompleteListener {
@@ -87,7 +90,8 @@ class RepoImpl @Inject constructor(
         }
     }
 
-    override fun updateUserData(userDataParent: UserDataParent): Flow<ResultState<String>> = callbackFlow {
+    override fun updateUserData(userDataParent: UserDataParent): Flow<ResultState<String>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection(USER_COLLECTION).document(userDataParent.nodeId)
                 .update(userDataParent.userdata.toMap()).addOnCompleteListener {
@@ -120,7 +124,8 @@ class RepoImpl @Inject constructor(
         }
     }
 
-    override fun getCategoriesInLimited(): Flow<ResultState<List<CategoryDataModels>>> = callbackFlow {
+    override fun getCategoriesInLimited(): Flow<ResultState<List<CategoryDataModels>>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection("Categories").limit(7).get()
                 .addOnSuccessListener { querySnapShot ->
@@ -171,21 +176,26 @@ class RepoImpl @Inject constructor(
         }
     }
 
-    override fun getProductById(productId: String): Flow<ResultState<ProductDataModels>> = callbackFlow {
+    override fun getProductById(productId: String): Flow<ResultState<ProductDataModels>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection(PRODUCTS_COLLECTION).document(productId).get()
-                .addOnSuccessListener {
-                    val product = it.toObject(ProductDataModels::class.java)
-                    trySend(ResultState.Success(product!!))
+                .addOnSuccessListener { documentSnapshot ->
+                    val product = documentSnapshot.toObject(ProductDataModels::class.java)
+                    if (product != null) {
+                        trySend(ResultState.Success(product))
+                    } else {
+                        trySend(ResultState.Error("Product not found or data is null"))
+                    }
                 }.addOnFailureListener {
-                    trySend(ResultState.Error(it.toString()))
+                    trySend(ResultState.Error(it.message ?: "Unknown error"))
                 }
-            awaitClose {
-                close()
-            }
+            awaitClose { close() }
         }
 
-    override fun addToCart(cartDataModels: CartDataModels): Flow<ResultState<String>> = callbackFlow {
+
+    override fun addToCart(cartDataModels: CartDataModels): Flow<ResultState<String>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection(ADD_TO_CART).document(firebaseAuth.currentUser!!.uid)
                 .collection("User_Cart").add(cartDataModels).addOnSuccessListener {
@@ -198,7 +208,8 @@ class RepoImpl @Inject constructor(
             }
         }
 
-    override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> = callbackFlow {
+    override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection(ADD_TO_FAV).document(firebaseAuth.currentUser!!.uid)
                 .collection("User_Fav").add(productDataModels).addOnSuccessListener {
@@ -259,7 +270,8 @@ class RepoImpl @Inject constructor(
 
     }
 
-    override fun getCheckout(productId: String): Flow<ResultState<ProductDataModels>> = callbackFlow {
+    override fun getCheckout(productId: String): Flow<ResultState<ProductDataModels>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection("Products").document(productId).get()
                 .addOnSuccessListener {
@@ -288,7 +300,8 @@ class RepoImpl @Inject constructor(
         }
     }
 
-    override fun getSpecificCategoryItems(categoryName: String): Flow<ResultState<List<ProductDataModels>>> = callbackFlow {
+    override fun getSpecificCategoryItems(categoryName: String): Flow<ResultState<List<ProductDataModels>>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection("Products").whereEqualTo("category", categoryName).get()
                 .addOnSuccessListener {
@@ -306,7 +319,8 @@ class RepoImpl @Inject constructor(
             }
         }
 
-    override fun getAllSuggestedProducts(): Flow<ResultState<List<ProductDataModels>>> = callbackFlow {
+    override fun getAllSuggestedProducts(): Flow<ResultState<List<ProductDataModels>>> =
+        callbackFlow {
             trySend(ResultState.Loading)
             firebaseFirestore.collection(ADD_TO_FAV).document(firebaseAuth.currentUser!!.uid)
                 .collection("User_Fav").get().addOnSuccessListener {

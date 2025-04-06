@@ -66,7 +66,7 @@ fun ProfilesScreenUI(
     viewModel: ECommerceAppViewModel = hiltViewModel()
 ) {
     LaunchedEffect(key1 = true) {
-        viewModel.getProductsById(firebaseAuth.currentUser!!.uid)
+        viewModel.getUserById(firebaseAuth.currentUser!!.uid)
     }
     val profileScreenState = viewModel.profileScreenState.collectAsStateWithLifecycle()
     val updateScreenState = viewModel.updateScreenState.collectAsStateWithLifecycle()
@@ -197,7 +197,7 @@ fun ProfilesScreenUI(
                             focusedBorderColor = colorResource(id = R.color.teal_200)
                         ),
                         modifier = Modifier.weight(1f),
-                        readOnly = if (!isEditing.value) false else true,
+                        readOnly = !isEditing.value,
                         shape = RoundedCornerShape(10.dp),
                         label = { Text(text = "First Name") }
                     )
@@ -210,7 +210,7 @@ fun ProfilesScreenUI(
                             focusedBorderColor = colorResource(id = R.color.teal_200)
                         ),
                         modifier = Modifier.weight(1f),
-                        readOnly = if (!isEditing.value) false else true,
+                        readOnly = !isEditing.value,
                         shape = RoundedCornerShape(10.dp),
                         label = { Text(text = "Last Name") }
                     )
@@ -224,7 +224,7 @@ fun ProfilesScreenUI(
                         focusedBorderColor = colorResource(id = R.color.teal_200)
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = if (!isEditing.value) false else true,
+                    readOnly = !isEditing.value,
                     shape = RoundedCornerShape(10.dp),
                     label = { Text(text = "Email") }
                 )
@@ -237,7 +237,7 @@ fun ProfilesScreenUI(
                         focusedBorderColor = colorResource(id = R.color.teal_200)
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = if (!isEditing.value) false else true,
+                    readOnly = !isEditing.value,
                     shape = RoundedCornerShape(10.dp),
                     label = { Text(text = "Phone Number") })
                 Spacer(modifier = Modifier.size(16.dp))
@@ -249,7 +249,7 @@ fun ProfilesScreenUI(
                         focusedBorderColor = colorResource(id = R.color.teal_200)
                     ),
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = if (!isEditing.value) false else true,
+                    readOnly = !isEditing.value,
                     shape = RoundedCornerShape(10.dp),
                     label = { Text(text = "Address") }
                 )
