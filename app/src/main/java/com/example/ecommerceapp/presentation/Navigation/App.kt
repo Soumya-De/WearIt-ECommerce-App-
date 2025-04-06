@@ -1,6 +1,5 @@
 package com.example.ecommerceapp.presentation.Navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -176,7 +175,7 @@ fun App(
                     val category: Routes.EachCategoryItemScreen = it.toRoute()
                     EachCategoryProduct(
                         navController = navController,
-                        productId = category.categoryName
+                        categoryName = category.categoryName
                     )
                 }
                 composable<Routes.CheckoutScreen> {
