@@ -84,6 +84,7 @@ fun PageIndicator(pageCount: Int, CurrentPage: Int, modifier: Modifier) {
 
 @Composable
 fun Banner(banners: List<BannerDataModels>) {
+    if (banners.isEmpty()) return
     val pagerState = rememberPagerState(pageCount = { banners.size })
     val scope = rememberCoroutineScope()
     LaunchedEffect1(Unit) {
@@ -98,7 +99,6 @@ fun Banner(banners: List<BannerDataModels>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
         Box(
             modifier = Modifier.wrapContentSize()
@@ -106,9 +106,7 @@ fun Banner(banners: List<BannerDataModels>) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.wrapContentSize()
-
             ) { currentPage ->
-
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -121,7 +119,6 @@ fun Banner(banners: List<BannerDataModels>) {
                         modifier = Modifier.fillMaxWidth(),
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.Center
-
                     )
                 }
 

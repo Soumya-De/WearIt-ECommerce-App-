@@ -55,7 +55,8 @@ class ECommerceAppViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val getProductsInLimitedUseCase: GetProductsInLimitedUseCase,
     private val addToFavUseCase: AddToFavUseCase
-) : ViewModel() {
+) : ViewModel()
+{
     private val _profileScreenState = MutableStateFlow(ProfileScreenState())
     val profileScreenState = _profileScreenState.asStateFlow()
 
@@ -102,7 +103,7 @@ class ECommerceAppViewModel @Inject constructor(
     val getAllSuggestedProductsState = _getAllSuggestedProductsState.asStateFlow()
 
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
-    val getBannerState = _homeScreenState.asStateFlow()
+    val homeScreenState = _homeScreenState.asStateFlow()
 
     fun getSpecificCategoryItems(categoryName: String) {
         viewModelScope.launch {
