@@ -43,6 +43,7 @@ import coil.compose.AsyncImage
 import com.example.ecommerceapp.R
 import com.example.ecommerceapp.domain.models.CartDataModels
 import com.example.ecommerceapp.presentation.Navigation.BottomNavItem
+import com.example.ecommerceapp.presentation.Navigation.Routes
 import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,6 +52,7 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
     val cartState = viewModel.getCartState.collectAsStateWithLifecycle()
     val cartData = cartState.value.userData ?: emptyList()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+    val productIds = cartData.map { it.productId }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getCart()
@@ -140,7 +142,7 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
                         }
                         HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
                         Button(
-                            onClick = {},
+                            onClick = {navController.navigate(Routes.CheckoutScreen(productIds))},
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 5.dp),

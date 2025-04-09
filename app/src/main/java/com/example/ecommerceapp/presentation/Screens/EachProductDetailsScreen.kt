@@ -192,7 +192,11 @@ fun EachProductDetailsScreen(
 
                         }
                         Button(
-                            onClick = { navController.navigate(Routes.CheckoutScreen(productId)) },
+                            onClick = {
+                                navController.navigate(
+                                    Routes.CheckoutScreen(productIds = listOf(product.productId)) // ✅
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(colorResource(id = R.color.teal_200))
                         ) {

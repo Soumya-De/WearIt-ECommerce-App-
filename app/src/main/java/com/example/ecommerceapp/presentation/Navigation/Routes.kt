@@ -24,7 +24,7 @@ sealed class Routes{
     object WishListScreen
 
     @Serializable
-    data class CheckoutScreen(val productId: String)
+    data class CheckoutScreen(val productIds: List<String>)
 
     @Serializable
     object ProfileScreen

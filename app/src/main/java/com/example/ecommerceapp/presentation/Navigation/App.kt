@@ -180,8 +180,12 @@ fun App(
                     )
                 }
                 composable<Routes.CheckoutScreen> {
-                    val product: Routes.EachProductDetailsScreen = it.toRoute()
-                    CheckOutScreen(navController = navController, productId = product.productId, pay = startPayment)
+                    val screen: Routes.CheckoutScreen = it.toRoute()
+                    CheckOutScreen(
+                        navController = navController,
+                        screen = screen,
+                        pay = startPayment
+                    )
                 }
             }
         }

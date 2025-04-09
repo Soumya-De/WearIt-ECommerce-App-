@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,7 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,12 +51,14 @@ import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.ecommerceapp.R
+import com.example.ecommerceapp.domain.models.ProductDataModels
+import com.example.ecommerceapp.presentation.Navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckOutScreen(
     navController: NavController,
-    productId: String,
+    screen: Routes.CheckoutScreen, // Contains List<String>
     viewModel: ECommerceAppViewModel = hiltViewModel(),
     pay: () -> Unit
 ) {
@@ -63,11 +71,22 @@ fun CheckOutScreen(
     val city = remember { mutableStateOf("") }
     val zipCode = remember { mutableStateOf("") }
     val selectedMethod = remember { mutableStateOf("Standard FREE Delivery Over Rs. 4500") }
+    val productList = remember { mutableStateListOf<ProductDataModels>() }
 
-    LaunchedEffect(key1 = Unit) {
-        viewModel.getProductsById(productId)
+    LaunchedEffect(screen.productIds) {
+        productList.clear()
+        screen.productIds.forEach { productId ->
+            viewModel.getProductsById(productId)
+        }
     }
-
+    val fetchedProduct = state.value.userData
+    LaunchedEffect(fetchedProduct) {
+        fetchedProduct?.let {
+            if (!productList.any { p -> p.productId == it.productId }) {
+                productList.add(it)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -117,27 +136,39 @@ fun CheckOutScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        AsyncImage(
-                            model = state.value.userData!!.image,
-                            contentDescription = null,
+                    Text("Your Products", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+
+                    productList.forEach { product ->
+                        Card(
                             modifier = Modifier
-                                .size(80.dp)
-                                .border(1.dp, Color.Gray)
-                        )
-                        Spacer(modifier = Modifier.padding(16.dp))
-                        Column {
-                            Text(
-                                text = state.value.userData!!.name,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = "₹${state.value.userData!!.price}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AsyncImage(
+                                    model = product.image,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(80.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(product.name, fontWeight = FontWeight.Bold)
+                                    Text("₹${product.finalPrice}")
+                                }
+                            }
                         }
                     }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Column {
                         Text(
