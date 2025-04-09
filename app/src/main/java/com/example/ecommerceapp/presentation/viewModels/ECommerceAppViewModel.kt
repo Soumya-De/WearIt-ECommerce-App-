@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -104,6 +105,28 @@ class ECommerceAppViewModel @Inject constructor(
 
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState = _homeScreenState.asStateFlow()
+
+    fun uploadProfileImageToStorage(
+        uri: Uri,
+        userId: String,
+        onResult: (String?) -> Unit
+    ) {
+        val storageRef = FirebaseStorage.getInstance()
+            .reference.child("profileImages/$userId.jpg")
+
+        storageRef.putFile(uri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) throw task.exception!!
+                storageRef.downloadUrl
+            }
+            .addOnSuccessListener { downloadUrl ->
+                onResult(downloadUrl.toString()) // ✅ Firebase image URL
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
+
 
     fun getSpecificCategoryItems(categoryName: String) {
         viewModelScope.launch {

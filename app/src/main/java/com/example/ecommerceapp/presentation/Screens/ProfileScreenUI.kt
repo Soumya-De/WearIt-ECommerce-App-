@@ -1,6 +1,7 @@
 package com.example.ecommerceapp.presentation.Screens
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -74,6 +75,8 @@ fun ProfilesScreenUI(
     val updateScreenState = viewModel.updateScreenState.collectAsStateWithLifecycle()
     val userProfileImageState = viewModel.uploadUserProfileImageState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val currentUser = firebaseAuth.currentUser
+    Log.d("UPLOAD", "UserID = ${currentUser?.uid}")
     val showDialog = remember { mutableStateOf(false) }
     val isEditing = remember { mutableStateOf(false) }
     val imageUri = rememberSaveable { mutableStateOf("") }
@@ -97,13 +100,20 @@ fun ProfilesScreenUI(
             imageUri.value = userData.profileImage ?: ""
         }
     }
-    val pickMedia =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
-            if (uri != null) {
-                imageUri.value = uri.toString() // it is converted into string
+    val pickMedia = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null && currentUser != null) {
+                viewModel.uploadProfileImageToStorage(uri, currentUser.uid) { downloadUrl ->
+                    if (downloadUrl != null) {
+                        imageUri.value = downloadUrl // ✅ Save valid URL
+                    } else {
+                        Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
-
         }
+    )
     if (updateScreenState.value.userData != null) {
         Toast.makeText(context, updateScreenState.value.userData, Toast.LENGTH_SHORT).show()
     } else if (updateScreenState.value.errorMessages != null) {
