@@ -287,7 +287,7 @@ class RepoImpl @Inject constructor(
 
     override fun getBanner(): Flow<ResultState<List<BannerDataModels>>> = callbackFlow {
         trySend(ResultState.Loading)
-        firebaseFirestore.collection("Banner").get().addOnSuccessListener {
+        firebaseFirestore.collection("Banners").get().addOnSuccessListener {
             val banner = it.documents.mapNotNull { document ->
                 document.toObject(BannerDataModels::class.java)
             }
