@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -101,29 +102,32 @@ fun Banner(banners: List<BannerDataModels>) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.wrapContentSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp) // ✅ FIXED height for banner area
         ) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.wrapContentSize()
+                modifier = Modifier.fillMaxSize() // fills the Box height
             ) { currentPage ->
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 15.dp, end = 15.dp),
+                        .fillMaxSize()
+                        .padding(horizontal = 15.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(8.dp)
                 ) {
                     AsyncImage(
                         model = banners[currentPage].image,
                         contentDescription = banners[currentPage].name,
-                        modifier = Modifier.fillMaxWidth(),
                         contentScale = ContentScale.Crop,
-                        alignment = Alignment.Center
+                        alignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize() // fills the Card area
                     )
                 }
-
             }
         }
+
         PageIndicator(
             pageCount = banners.size,
             CurrentPage = pagerState.currentPage,

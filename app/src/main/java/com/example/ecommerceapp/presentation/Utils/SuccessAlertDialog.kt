@@ -36,54 +36,61 @@ fun SuccessAlertDialog(
 ) {
     BasicAlertDialog(
         onDismissRequest = {},
-        modifier = Modifier.background(shape = RoundedCornerShape(16.dp), color = Color.White),
         content = {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .background(Color.White, shape = RoundedCornerShape(16.dp))
+                    .padding(24.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(colorResource(id = R.color.teal_200), shape = CircleShape),
-                    //contentAlignment = Alignment.Center
-
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Success",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-                Text(
-                    text = "Success",
-                    fontSize = 24.sp,
-                    color = colorResource(id = R.color.teal_200),
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Congratulations! You have \n Completed your registration",
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = onClick,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(id = R.color.teal_200)),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                {
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(colorResource(id = R.color.teal_200), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Success",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Text(
-                        text = "Go to Home",
-                        color = Color.Gray
+                        text = "Success",
+                        fontSize = 24.sp,
+                        color = colorResource(id = R.color.teal_200),
+                        fontWeight = FontWeight.Bold
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Congratulations! You have \nCompleted your registration",
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = onClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(colorResource(id = R.color.teal_200)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Go to Home", color = Color.Gray)
+                    }
                 }
             }
         }
