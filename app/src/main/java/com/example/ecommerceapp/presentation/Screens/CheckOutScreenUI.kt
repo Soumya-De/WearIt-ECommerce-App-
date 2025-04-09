@@ -51,7 +51,8 @@ import com.example.ecommerceapp.R
 fun CheckOutScreen(
     navController: NavController,
     productId: String,
-    viewModel: ECommerceAppViewModel = hiltViewModel()
+    viewModel: ECommerceAppViewModel = hiltViewModel(),
+    pay: () -> Unit
 ) {
 
     val state = viewModel.getProductByIdState.collectAsStateWithLifecycle()
@@ -238,7 +239,7 @@ fun CheckOutScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                            //pay.invoke()
+                            pay.invoke()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(colorResource(id = R.color.teal_200))

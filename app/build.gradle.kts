@@ -91,4 +91,5 @@ dependencies {
 
     // ✅ Custom Bottom Navigation Bar (Animated Bottom Navigation)
     implementation(libs.bottombar)
+    implementation ("com.razorpay:checkout:1.6.40")
 }
