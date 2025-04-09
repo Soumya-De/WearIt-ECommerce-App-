@@ -1,7 +1,7 @@
 package com.example.ecommerceapp.presentation.viewModels
 
 import android.net.Uri
-import android.util.Log
+
 import com.example.ecommerceapp.common.HomeScreenState
 import com.example.ecommerceapp.common.ResultState
 import com.example.ecommerceapp.domain.models.UserDataParent
@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

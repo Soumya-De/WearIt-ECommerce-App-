@@ -1,6 +1,7 @@
 package com.example.ecommerceapp.data.repo
 
 import android.net.Uri
+import android.util.Log
 import com.example.ecommerceapp.common.ADD_TO_CART
 import com.example.ecommerceapp.common.ResultState
 import com.example.ecommerceapp.common.USER_COLLECTION
@@ -181,10 +182,14 @@ class RepoImpl @Inject constructor(
             trySend(ResultState.Loading)
             firebaseFirestore.collection(PRODUCTS_COLLECTION).document(productId).get()
                 .addOnSuccessListener { documentSnapshot ->
+                    Log.d("FIREBASE", "Fetched doc: ${documentSnapshot.id}, exists: ${documentSnapshot.exists()}")
                     val product = documentSnapshot.toObject(ProductDataModels::class.java)
                     if (product != null) {
-                        trySend(ResultState.Success(product))
+                        Log.d("FIREBASE", "Product parsed: ${product.name}")
+                        val productWithId = product.copy(productId = documentSnapshot.id)
+                        trySend(ResultState.Success(productWithId))
                     } else {
+                        Log.e("FIREBASE", "Product is null!")
                         trySend(ResultState.Error("Product not found or data is null"))
                     }
                 }.addOnFailureListener {

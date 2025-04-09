@@ -288,11 +288,10 @@ fun ProductCard(product: ProductDataModels, navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(150.dp)
-                    .width(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .aspectRatio(1f),
+                    .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
+
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text = product.name,
