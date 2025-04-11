@@ -9,5 +9,6 @@ data class CartDataModels(
     val cartId: String = "", // <- Firestore document ID for cart item
     val size: String = "",
     val description: String = "",
+    var finalPrice: String = "",
     val category: String = ""
 )

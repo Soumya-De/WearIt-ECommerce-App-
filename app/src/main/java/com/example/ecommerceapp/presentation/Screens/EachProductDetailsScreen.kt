@@ -179,6 +179,7 @@ fun EachProductDetailsScreen(
                                     image = product.image,
                                     quantity = quantity.toString(),
                                     size = selectSize,
+                                    finalPrice = product.finalPrice,
                                     productId = product.productId,
                                     description = product.description,
                                     category = product.category

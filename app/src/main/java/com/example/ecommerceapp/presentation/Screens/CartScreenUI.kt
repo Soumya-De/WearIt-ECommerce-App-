@@ -39,10 +39,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -60,6 +63,10 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
     val cartData = cartState.value.userData ?: emptyList()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     val productIds = cartData.map { it.productId }
+    val totalPrice = cartData.sumOf {
+        it.price.toIntOrNull()?.times(it.quantity.toIntOrNull() ?: 1) ?: 0
+    }
+
 
     LaunchedEffect(key1 = Unit) {
         viewModel.getCart()
@@ -166,6 +173,56 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
                                         Log.d("CART_UI", "Remove ${item.productId}")
                                         viewModel.removeFromCart(item.productId)
                                     }
+                                )
+                            }
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                        val totalOriginal = cartData.sumOf {
+                            it.price.toIntOrNull()?.times(it.quantity.toIntOrNull() ?: 1) ?: 0
+                        }
+                        val totalFinal = cartData.sumOf {
+                            it.finalPrice.toIntOrNull()?.times(it.quantity.toIntOrNull() ?: 1) ?: 0
+                        }
+                        val totalDiscount = totalOriginal - totalFinal
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "Total MRP: ₹$totalOriginal",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                text = "Discount on MRP: -₹$totalDiscount",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Red,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                text = "Amount Payable: ₹$totalFinal",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color(0xFF388E3C),
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            if (totalDiscount > 0) {
+                                Text(
+                                    text = "You saved ₹$totalDiscount! 🎉",
+                                    color = Color(0xFF2E7D32),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp)
                                 )
                             }
                         }
