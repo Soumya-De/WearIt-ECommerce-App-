@@ -202,16 +202,29 @@ class RepoImpl @Inject constructor(
     override fun addToCart(cartDataModels: CartDataModels): Flow<ResultState<String>> =
         callbackFlow {
             trySend(ResultState.Loading)
-            firebaseFirestore.collection(ADD_TO_CART).document(firebaseAuth.currentUser!!.uid)
-                .collection("User_Cart").add(cartDataModels).addOnSuccessListener {
+
+            val userId = firebaseAuth.currentUser?.uid ?: run {
+                trySend(ResultState.Error("User not logged in"))
+                close()
+                return@callbackFlow
+            }
+
+            // ✅ Set document ID to productId
+            firebaseFirestore.collection("add_to_cart")
+                .document(userId)
+                .collection("User_Cart")
+                .document(cartDataModels.productId) // 👈 this ensures document ID is productId
+                .set(cartDataModels)
+                .addOnSuccessListener {
                     trySend(ResultState.Success("Product Added to Cart"))
-                }.addOnFailureListener {
+                }
+                .addOnFailureListener {
                     trySend(ResultState.Error(it.toString()))
                 }
-            awaitClose {
-                close()
-            }
+
+            awaitClose { close() }
         }
+
 
     override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> =
         callbackFlow {
@@ -245,15 +258,17 @@ class RepoImpl @Inject constructor(
 
     override fun getCart(): Flow<ResultState<List<CartDataModels>>> = callbackFlow {
         trySend(ResultState.Loading)
-        firebaseFirestore.collection(ADD_TO_CART).document(firebaseAuth.currentUser!!.uid)
-            .collection("User_Cart").get().addOnSuccessListener {
-                val cart = it.documents.mapNotNull { document ->
-                    document.toObject(CartDataModels::class.java)?.apply {
-                        cartId = document.id
-                    }
+        firebaseFirestore.collection("add_to_cart")
+            .document(firebaseAuth.currentUser!!.uid)
+            .collection("User_Cart")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val cartItems = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(CartDataModels::class.java)?.copy(cartId = document.id)
                 }
-                trySend(ResultState.Success(cart))
+                trySend(ResultState.Success(cartItems))
             }
+
         awaitClose {
             close()
         }
@@ -340,4 +355,40 @@ class RepoImpl @Inject constructor(
                 close()
             }
         }
+
+    override suspend fun updateCartItemQuantity(productId: String, newQty: Int) {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        Log.d("FIRESTORE", "Updating cart item $productId to qty $newQty")
+
+        firebaseFirestore.collection("add_to_cart")
+            .document(userId)
+            .collection("User_Cart")
+            .document(productId)
+            .update("quantity", newQty.toString())  // Only if quantity is a string in Firestore
+            .addOnSuccessListener {
+                Log.d("FIRESTORE", "Quantity update success for $productId")
+            }
+            .addOnFailureListener {
+                Log.e("FIRESTORE", "Quantity update failed for $productId: ${it.message}")
+            }
+    }
+
+    override suspend fun removeCartItem(productId: String) {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        Log.d("FIRESTORE", "Removing cart item $productId")
+
+        firebaseFirestore.collection("add_to_cart")
+            .document(userId)
+            .collection("User_Cart")
+            .document(productId)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("FIRESTORE", "Remove success for $productId")
+            }
+            .addOnFailureListener {
+                Log.e("FIRESTORE", "Remove failed for $productId: ${it.message}")
+            }
+    }
+
+
 }

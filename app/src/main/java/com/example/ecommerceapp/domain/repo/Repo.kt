@@ -11,6 +11,8 @@ import com.example.ecommerceapp.domain.models.UserDataParent
 import kotlinx.coroutines.flow.Flow
 
 interface Repo {
+    suspend fun updateCartItemQuantity(productId: String, newQty: Int)
+    suspend fun removeCartItem(productId: String)
     fun RegisterUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>>
     fun LoginUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>>
     fun getUserById(uid: String): Flow<ResultState<UserDataParent>>

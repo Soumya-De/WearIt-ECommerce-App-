@@ -1,20 +1,27 @@
 package com.example.ecommerceapp.presentation.Screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -137,7 +144,29 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
 
                         ) {
                             items(cartData) { item ->
-                                CartItemCard(item = item!!)
+                                CartItemCard(
+                                    item = item,
+                                    onIncrease = {
+                                        val currentQty = item.quantity.toIntOrNull() ?: 1
+                                        if (currentQty < 99) { // Optional max limit
+                                            Log.d("CART_UI", "Increase ${item.productId} from $currentQty to ${currentQty + 1}")
+                                            viewModel.updateCartItemQuantity(item.productId, currentQty + 1)
+                                        }
+                                    },
+                                    onDecrease = {
+                                        val currentQty = item.quantity.toIntOrNull() ?: 1
+                                        if (currentQty > 1) {
+                                            Log.d("CART_UI", "Decrease ${item.productId} from $currentQty to ${currentQty - 1}")
+                                            viewModel.updateCartItemQuantity(item.productId, currentQty - 1)
+                                        } else {
+                                            Log.d("CART_UI", "Qty is 1, cannot decrease more.")
+                                        }
+                                    },
+                                    onRemove = {
+                                        Log.d("CART_UI", "Remove ${item.productId}")
+                                        viewModel.removeFromCart(item.productId)
+                                    }
+                                )
                             }
                         }
                         HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
@@ -159,7 +188,12 @@ fun CartScreen(navController: NavController, viewModel: ECommerceAppViewModel = 
 }
 
 @Composable
-fun CartItemCard(item: CartDataModels) {
+fun CartItemCard(
+    item: CartDataModels,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit,
+    onRemove: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -176,8 +210,8 @@ fun CartItemCard(item: CartDataModels) {
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(8.dp))
-
             )
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -188,26 +222,26 @@ fun CartItemCard(item: CartDataModels) {
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
-
-                Text(
-                    text = "Size:${item.size}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "₹${item.price}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = "Size: ${item.size}")
+                Text(text = "₹${item.price}")
             }
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = "Qty:${item.quantity}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
 
+            Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onDecrease) {
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease")
+                    }
+
+                    Text(text = item.quantity)
+
+                    IconButton(onClick = onIncrease) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Increase")
+                    }
+                }
+
+                IconButton(onClick = onRemove) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove Item")
+                }
             }
         }
     }

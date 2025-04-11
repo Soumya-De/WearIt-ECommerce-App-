@@ -33,8 +33,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.ecommerceapp.domain.repo.Repo
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,7 +58,8 @@ class ECommerceAppViewModel @Inject constructor(
     private val getAllFavUseCase: GetAllFavUseCase,
     private val getCartUseCase: GetCartUseCase,
     private val getProductsInLimitedUseCase: GetProductsInLimitedUseCase,
-    private val addToFavUseCase: AddToFavUseCase
+    private val addToFavUseCase: AddToFavUseCase,
+    private val repo: Repo
 ) : ViewModel() {
     private val _profileScreenState = MutableStateFlow(ProfileScreenState())
     val profileScreenState = _profileScreenState.asStateFlow()
@@ -105,6 +108,21 @@ class ECommerceAppViewModel @Inject constructor(
 
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState = _homeScreenState.asStateFlow()
+
+    fun updateCartItemQuantity(cartId: String, newQty: Int) {
+        viewModelScope.launch {
+            repo.updateCartItemQuantity(cartId, newQty)
+            getCart() // refresh cart
+        }
+    }
+
+    fun removeFromCart(cartId: String) {
+        viewModelScope.launch {
+            repo.removeCartItem(cartId)
+            getCart() // refresh cart
+        }
+    }
+
 
     fun uploadProfileImageToStorage(
         uri: Uri,
@@ -221,7 +239,8 @@ class ECommerceAppViewModel @Inject constructor(
         }
     }
 
-    fun getCart() {
+    fun getCart()
+    {
         viewModelScope.launch {
             getCartUseCase.getCart().collect {
                 when (it) {
