@@ -26,6 +26,27 @@ import javax.inject.Inject
 class RepoImpl @Inject constructor(
     var firebaseAuth: FirebaseAuth, var firebaseFirestore: FirebaseFirestore
 ) : Repo {
+
+    override fun removeFromFav(productId: String): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        val userId = firebaseAuth.currentUser?.uid ?: return@callbackFlow
+
+        firebaseFirestore.collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId) // <- matches what you set above
+            .delete()
+            .addOnSuccessListener {
+                trySend(ResultState.Success("Removed from Wishlist"))
+            }
+            .addOnFailureListener {
+                trySend(ResultState.Error(it.message ?: "Unknown error"))
+            }
+
+        awaitClose { close() }
+    }
+
     override fun RegisterUserWithEmailAndPassword(userData: UserData): Flow<ResultState<String>> =
         callbackFlow {
             trySend(ResultState.Loading)
@@ -229,8 +250,14 @@ class RepoImpl @Inject constructor(
     override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> =
         callbackFlow {
             trySend(ResultState.Loading)
-            firebaseFirestore.collection(ADD_TO_FAV).document(firebaseAuth.currentUser!!.uid)
-                .collection("User_Fav").add(productDataModels).addOnSuccessListener {
+            val userId = firebaseAuth.currentUser?.uid ?: return@callbackFlow
+
+            firebaseFirestore.collection(ADD_TO_FAV)
+                .document(userId)
+                .collection("User_Fav")
+                .document(productDataModels.productId) // Make sure doc ID = productId
+                .set(productDataModels)
+                .addOnSuccessListener {
                     trySend(ResultState.Success("Product Added to Fav"))
                 }.addOnFailureListener {
                     trySend(ResultState.Error(it.toString()))

@@ -24,6 +24,7 @@ interface Repo {
     fun getProductById(productId: String): Flow<ResultState<ProductDataModels>>
     fun addToCart(cartDataModels: CartDataModels): Flow<ResultState<String>>
     fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>>
+    fun removeFromFav(productId: String): Flow<ResultState<String>>
     fun getAllFav(): Flow<ResultState<List<ProductDataModels>>>
     fun getCart(): Flow<ResultState<List<CartDataModels>>>
     fun getAllCategories(): Flow<ResultState<List<CategoryDataModels>>>

@@ -1,6 +1,7 @@
 package com.example.ecommerceapp.presentation.viewModels
 
 import android.net.Uri
+import android.util.Log
 
 import com.example.ecommerceapp.common.HomeScreenState
 import com.example.ecommerceapp.common.ResultState
@@ -108,6 +109,25 @@ class ECommerceAppViewModel @Inject constructor(
 
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState = _homeScreenState.asStateFlow()
+
+    fun removeFromFav(productId: String) {
+        Log.d("WISHLIST_VIEWMODEL", "Attempting to remove $productId from fav")
+        viewModelScope.launch {
+            addToFavUseCase.removeFromFav(productId).collect {
+                when (it) {
+                    is ResultState.Success -> {
+                        Log.d("WISHLIST_VIEWMODEL", "Successfully removed $productId")
+                        getAllFav() // Refresh UI
+                    }
+                    is ResultState.Error -> {
+                        Log.e("WISHLIST_VIEWMODEL", "Error removing $productId: ${it.message}")
+                    }
+                    else -> Unit
+                }
+            }
+        }
+    }
+
 
     fun updateCartItemQuantity(cartId: String, newQty: Int) {
         viewModelScope.launch {

@@ -1,9 +1,12 @@
 package com.example.ecommerceapp.presentation.Screens
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,13 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -36,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.ecommerceapp.domain.models.CartDataModels
 import com.example.ecommerceapp.domain.models.ProductDataModels
 import com.example.ecommerceapp.presentation.Navigation.Routes
 
@@ -46,7 +55,6 @@ fun GetAllFav(navController: NavController, viewModel: ECommerceAppViewModel = h
     val getAllFavData: List<ProductDataModels> = getAllFav.value.userData.orEmpty().filterNotNull()
     LaunchedEffect(key1 = Unit) {
         viewModel.getAllFav()
-
     }
     Scaffold(
         topBar = {
@@ -88,7 +96,6 @@ fun GetAllFav(navController: NavController, viewModel: ECommerceAppViewModel = h
                 getAllFav.value.errorMessages != null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = getAllFav.value.errorMessages!!)
-
                     }
                 }
 
@@ -106,9 +113,32 @@ fun GetAllFav(navController: NavController, viewModel: ECommerceAppViewModel = h
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(getAllFavData) { product ->
-                            ProductCard(product = product, onProductClick = {
-                                navController.navigate(Routes.EachProductDetailsScreen(product.productId))
-                            })
+                            ProductCard(
+                                product = product,
+                                onProductClick = {
+                                    navController.navigate(Routes.EachProductDetailsScreen(product.productId))
+                                },
+                                onRemoveFromWishlist = {
+                                    Log.d("WISHLIST_UI", "Removing ${product.productId}")
+                                    viewModel.removeFromFav(product.productId)
+                                },
+                                onMoveToCart = {
+                                    val cartItem = CartDataModels(
+                                        name = product.name,
+                                        price = product.price,
+                                        finalPrice = product.finalPrice,
+                                        image = product.image,
+                                        quantity = "1",
+                                        size = "M",
+                                        productId = product.productId,
+                                        description = product.description,
+                                        category = product.category
+                                    )
+                                    Log.d("WISHLIST_UI", "Moving ${product.productId} to cart")
+                                    viewModel.addToCart(cartItem)
+                                    viewModel.removeFromFav(product.productId)
+                                }
+                            )
                         }
                     }
                 }
@@ -118,33 +148,58 @@ fun GetAllFav(navController: NavController, viewModel: ECommerceAppViewModel = h
 }
 
 @Composable
-fun ProductCard(product: ProductDataModels, onProductClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onProductClick,
-    ) {
-        Column {
-            AsyncImage(
-                model = product.image,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = product.price,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+fun ProductCard(
+    product: ProductDataModels,
+    onProductClick: () -> Unit,
+    onRemoveFromWishlist: () -> Unit,
+    onMoveToCart: () -> Unit
+) {
+    Box {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(),
+            onClick = onProductClick,
+        ) {
+            Column {
+                Box {
+                    AsyncImage(
+                        model = product.image,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = onRemoveFromWishlist,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .background(Color.White.copy(alpha = 0.7f), shape = CircleShape)
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Remove")
+                    }
+                }
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "₹${product.finalPrice}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Button(
+                        onClick = onMoveToCart,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Move to Cart")
+                    }
+                }
             }
         }
     }
