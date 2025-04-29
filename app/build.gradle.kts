@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.dynamic.links.ktx)
 
     // Testing dependencies
     testImplementation(libs.junit)
@@ -98,5 +99,5 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
 
-
+    implementation ("com.google.firebase:firebase-dynamic-links-ktx")
 }

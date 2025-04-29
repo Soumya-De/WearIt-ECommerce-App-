@@ -27,6 +27,25 @@ class RepoImpl @Inject constructor(
     var firebaseAuth: FirebaseAuth, var firebaseFirestore: FirebaseFirestore
 ) : Repo {
 
+    override fun getWishlistForUser(userId: String): Flow<ResultState<List<ProductDataModels>>> = callbackFlow {
+        trySend(ResultState.Loading)
+
+        firebaseFirestore.collection("add_to_fav")
+            .document(userId)
+            .collection("User_Fav")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { it.toObject(ProductDataModels::class.java) }
+                trySend(ResultState.Success(list))
+            }
+            .addOnFailureListener {
+                trySend(ResultState.Error(it.message ?: "Unknown error"))
+            }
+
+        awaitClose { close() }
+    }
+
+
     override fun removeFromFav(productId: String): Flow<ResultState<String>> = callbackFlow {
         trySend(ResultState.Loading)
 
@@ -203,7 +222,10 @@ class RepoImpl @Inject constructor(
             trySend(ResultState.Loading)
             firebaseFirestore.collection(PRODUCTS_COLLECTION).document(productId).get()
                 .addOnSuccessListener { documentSnapshot ->
-                    Log.d("FIREBASE", "Fetched doc: ${documentSnapshot.id}, exists: ${documentSnapshot.exists()}")
+                    Log.d(
+                        "FIREBASE",
+                        "Fetched doc: ${documentSnapshot.id}, exists: ${documentSnapshot.exists()}"
+                    )
                     val product = documentSnapshot.toObject(ProductDataModels::class.java)
                     if (product != null) {
                         Log.d("FIREBASE", "Product parsed: ${product.name}")
@@ -246,26 +268,65 @@ class RepoImpl @Inject constructor(
             awaitClose { close() }
         }
 
+    override fun likeProduct(userId: String, productId: String): Flow<ResultState<Unit>> = callbackFlow {
+        val ref = firebaseFirestore.collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
 
-    override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> =
-        callbackFlow {
-            trySend(ResultState.Loading)
-            val userId = firebaseAuth.currentUser?.uid ?: return@callbackFlow
-
-            firebaseFirestore.collection(ADD_TO_FAV)
-                .document(userId)
-                .collection("User_Fav")
-                .document(productDataModels.productId) // Make sure doc ID = productId
-                .set(productDataModels)
-                .addOnSuccessListener {
-                    trySend(ResultState.Success("Product Added to Fav"))
-                }.addOnFailureListener {
-                    trySend(ResultState.Error(it.toString()))
-                }
-            awaitClose {
-                close()
-            }
+        firebaseFirestore.runTransaction { transaction ->
+            val snapshot = transaction.get(ref)
+            val currentLikes = snapshot.get("likes.total") as? Long ?: 0
+            transaction.update(ref, "likes.total", currentLikes + 1)
+        }.addOnSuccessListener {
+            trySend(ResultState.Success(Unit))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(it.message ?: "Like failed"))
         }
+
+        awaitClose { close() }
+    }
+
+
+    override fun addTOFav(productDataModels: ProductDataModels): Flow<ResultState<String>> = callbackFlow {
+        trySend(ResultState.Loading)
+        val userId = firebaseAuth.currentUser?.uid ?: return@callbackFlow
+
+        val favRef = firebaseFirestore.collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productDataModels.productId)
+
+        favRef.get().addOnSuccessListener { doc ->
+            if (!doc.exists()) {
+                // First-time add – include likes initialized to 0
+                val data = hashMapOf(
+                    "productId" to productDataModels.productId,
+                    "name" to productDataModels.name,
+                    "image" to productDataModels.image,
+                    "price" to productDataModels.price,
+                    "finalPrice" to productDataModels.finalPrice,
+                    "description" to productDataModels.description,
+                    "category" to productDataModels.category,
+                    "likes" to mapOf("total" to 0)
+                )
+                favRef.set(data)
+                    .addOnSuccessListener {
+                        trySend(ResultState.Success("Product Added to Fav"))
+                    }
+                    .addOnFailureListener {
+                        trySend(ResultState.Error(it.message ?: "Failed to add to fav"))
+                    }
+            } else {
+                trySend(ResultState.Success("Already in Favorites"))
+            }
+        }.addOnFailureListener {
+            trySend(ResultState.Error(it.message ?: "Failed to fetch fav document"))
+        }
+
+        awaitClose { close() }
+    }
+
 
     override fun getAllFav(): Flow<ResultState<List<ProductDataModels>>> = callbackFlow {
         trySend(ResultState.Loading)

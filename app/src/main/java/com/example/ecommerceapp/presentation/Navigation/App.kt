@@ -1,5 +1,8 @@
 package com.example.ecommerceapp.presentation.Navigation
 
+import android.app.Activity
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -27,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
@@ -45,13 +49,17 @@ import com.example.ecommerceapp.presentation.LoginScreenUI
 import com.example.ecommerceapp.presentation.Screens.AllCategoriesScreen
 import com.example.ecommerceapp.presentation.Screens.CartScreen
 import com.example.ecommerceapp.presentation.Screens.CheckOutScreen
+import com.example.ecommerceapp.presentation.Screens.CommentsScreen
 import com.example.ecommerceapp.presentation.Screens.EachCategoryProduct
 import com.example.ecommerceapp.presentation.Screens.EachProductDetailsScreen
 import com.example.ecommerceapp.presentation.Screens.GetAllFav
 import com.example.ecommerceapp.presentation.Screens.GetAllProduct
 import com.example.ecommerceapp.presentation.Screens.HomeScreenUI
 import com.example.ecommerceapp.presentation.Screens.ProfilesScreenUI
+import com.example.ecommerceapp.presentation.Screens.SharedWishlistScreen
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.dynamiclinks.dynamicLinks
 
 
 data class BottomNavItem(val name: String, val icon: ImageVector, val unselectedIcon: ImageVector)
@@ -59,7 +67,8 @@ data class BottomNavItem(val name: String, val icon: ImageVector, val unselected
 @Composable
 fun App(
     firebaseAuth: FirebaseAuth,
-    startPayment:()-> Unit
+    pendingDynamicLink: Uri?,
+    startPayment: () -> Unit
 ) {
     val navController = rememberNavController()
     var selectedItem by remember { mutableStateOf(0) }
@@ -136,6 +145,15 @@ fun App(
                 .padding(innerPadding)
                 .padding(bottom = if (shouldShowBottomBar.value) 60.dp else 0.dp)
         ) {
+            //val context = LocalContext.current
+
+            LaunchedEffect(pendingDynamicLink) {
+                val userId = pendingDynamicLink?.getQueryParameter("userId")
+                if (!userId.isNullOrEmpty()) {
+                    navController.navigate(Routes.SharedWishlistScreen(userId))
+                }
+            }
+
             NavHost(navController = navController, startDestination = startScreen) {
                 navigation<SubNavigation.LoginSignUpScreen>(startDestination = Routes.LoginScreen) {
                     composable<Routes.LoginScreen> {
@@ -186,6 +204,17 @@ fun App(
                         screen = screen,
                         pay = startPayment
                     )
+                }
+                composable<Routes.SharedWishlistScreen> {
+                    val screen: Routes.SharedWishlistScreen = it.toRoute()
+                    SharedWishlistScreen(
+                        userId = screen.userId,
+                        navController = navController
+                    )
+                }
+                composable<Routes.CommentsScreen> {
+                    val args = it.toRoute<Routes.CommentsScreen>()
+                    CommentsScreen(productId = args.productId, ownerId = args.ownerId, navController = navController)
                 }
             }
         }

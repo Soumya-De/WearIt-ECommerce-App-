@@ -47,5 +47,10 @@ sealed class Routes{
     @Serializable
     data class EachCategoryItemScreen (val categoryName: String)
 
+    @Serializable
+    data class SharedWishlistScreen(val userId: String)
 
+    @Serializable
+    data class CommentsScreen(val productId: String, val ownerId: String)
 }
+//interface Screen

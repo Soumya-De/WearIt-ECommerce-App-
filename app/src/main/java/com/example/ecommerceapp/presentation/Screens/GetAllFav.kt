@@ -1,6 +1,8 @@
 package com.example.ecommerceapp.presentation.Screens
 
+import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +21,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,9 +50,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.ecommerceapp.R
 import com.example.ecommerceapp.domain.models.CartDataModels
 import com.example.ecommerceapp.domain.models.ProductDataModels
 import com.example.ecommerceapp.presentation.Navigation.Routes
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +78,31 @@ fun GetAllFav(navController: NavController, viewModel: ECommerceAppViewModel = h
                     containerColor = Color.Transparent
                 )
             )
+        },
+        floatingActionButton = {
+            val context = LocalContext.current
+            FloatingActionButton(
+                onClick = {
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@FloatingActionButton
+                    viewModel.generateWishlistShareLink(
+                        userId = userId,
+                        onSuccess = { shortLink ->
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Check out my wishlist!")
+                                putExtra(Intent.EXTRA_TEXT, "Here's my wishlist: $shortLink")
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Share via"))
+                        },
+                        onError = {
+                            Toast.makeText(context, "Failed to generate link", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                },
+                containerColor = colorResource(id = R.color.teal_200)
+            ) {
+                Icon(Icons.Default.Share, contentDescription = "Share Wishlist")
+            }
         }
     ) { innerpadding ->
         Column(

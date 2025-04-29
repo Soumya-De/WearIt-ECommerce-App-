@@ -28,9 +28,11 @@ interface Repo {
     fun getAllFav(): Flow<ResultState<List<ProductDataModels>>>
     fun getCart(): Flow<ResultState<List<CartDataModels>>>
     fun getAllCategories(): Flow<ResultState<List<CategoryDataModels>>>
-    fun getCheckout(productId:String): Flow<ResultState<ProductDataModels>>
+    fun getCheckout(productId: String): Flow<ResultState<ProductDataModels>>
     fun getBanner(): Flow<ResultState<List<BannerDataModels>>>
     fun getSpecificCategoryItems(categoryName: String): Flow<ResultState<List<ProductDataModels>>>
     fun getAllSuggestedProducts(): Flow<ResultState<List<ProductDataModels>>>
+    fun getWishlistForUser(userId: String): Flow<ResultState<List<ProductDataModels>>>
+    fun likeProduct(userId: String, productId: String): Flow<ResultState<Unit>>
 }
 

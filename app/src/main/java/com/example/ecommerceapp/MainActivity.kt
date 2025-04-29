@@ -1,9 +1,12 @@
 package com.example.ecommerceapp
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,7 +25,9 @@ import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import com.example.ecommerceapp.presentation.Navigation.App
 import com.example.ecommerceapp.ui.theme.ECommerceAppTheme
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.dynamiclinks.dynamicLinks
 import com.razorpay.Checkout
 import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
@@ -36,20 +41,56 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     @Inject
     lateinit var firebaseAuth: FirebaseAuth
 
+    var pendingDynamicLink: Uri? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Handle initial deep link
+        processDynamicLink(intent)
+
         setContent {
-            ECommerceAppTheme {
-                MainScreen(firebaseAuth) {
-                    startPayment()
-                }
-            }
+            AppContent()
         }
     }
 
     @Composable
-    fun MainScreen(firebaseAuth: FirebaseAuth, onPayTest: () -> Unit) {
+    private fun AppContent() {
+        // Handle new intents in composition
+        val intentListener = rememberUpdatedState { newIntent: Intent ->
+            processDynamicLink(newIntent)
+        }
+
+        LaunchedEffect(Unit) {
+            addOnNewIntentListener { intent ->
+                intentListener.value(intent)
+            }
+        }
+
+        ECommerceAppTheme {
+            MainScreen(
+                firebaseAuth = firebaseAuth,
+                pendingDynamicLink = pendingDynamicLink,
+                onPayTest = { startPayment() }
+            )
+        }
+    }
+
+    private fun processDynamicLink(intent: Intent) {
+        Firebase.dynamicLinks.getDynamicLink(intent)
+            .addOnSuccessListener { pendingLinkData ->
+                pendingDynamicLink = pendingLinkData?.link
+                Log.d("DEEP_LINK", "Processed link: $pendingDynamicLink")
+            }
+    }
+
+    @Composable
+    fun MainScreen(
+        firebaseAuth: FirebaseAuth,
+        pendingDynamicLink: Uri?,
+        onPayTest: () -> Unit
+    ) {
         val showSplash = remember { mutableStateOf(true) }
 
         LaunchedEffect(Unit) {
@@ -61,7 +102,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         if (showSplash.value) {
             SplashScreen()
         } else {
-            App(firebaseAuth, onPayTest)
+            App(firebaseAuth = firebaseAuth, pendingDynamicLink = pendingDynamicLink, startPayment = onPayTest)
         }
     }
 

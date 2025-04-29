@@ -10,6 +10,7 @@ class AddToFavUseCase @Inject constructor(private val repo: Repo) {
     fun addToFav(productDataModels: ProductDataModels): Flow<ResultState<String>> {
         return repo.addTOFav(productDataModels)
     }
+
     fun removeFromFav(productId: String): Flow<ResultState<String>> {
         return repo.removeFromFav(productId)
     }

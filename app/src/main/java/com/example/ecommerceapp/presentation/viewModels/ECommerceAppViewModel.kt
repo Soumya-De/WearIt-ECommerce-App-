@@ -2,7 +2,6 @@ package com.example.ecommerceapp.presentation.viewModels
 
 import android.net.Uri
 import android.util.Log
-
 import com.example.ecommerceapp.common.HomeScreenState
 import com.example.ecommerceapp.common.ResultState
 import com.example.ecommerceapp.domain.models.UserDataParent
@@ -34,11 +33,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.ecommerceapp.common.ADD_TO_FAV
+import com.example.ecommerceapp.domain.models.CommentModel
 import com.example.ecommerceapp.domain.repo.Repo
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.dynamiclinks.androidParameters
+import com.google.firebase.dynamiclinks.dynamicLinks
+import com.google.firebase.dynamiclinks.shortLinkAsync
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
+import com.google.firebase.firestore.FirebaseFirestore
 
 @HiltViewModel
 class ECommerceAppViewModel @Inject constructor(
@@ -60,7 +72,8 @@ class ECommerceAppViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val getProductsInLimitedUseCase: GetProductsInLimitedUseCase,
     private val addToFavUseCase: AddToFavUseCase,
-    private val repo: Repo
+    private val repo: Repo,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
     private val _profileScreenState = MutableStateFlow(ProfileScreenState())
     val profileScreenState = _profileScreenState.asStateFlow()
@@ -110,6 +123,157 @@ class ECommerceAppViewModel @Inject constructor(
     private val _homeScreenState = MutableStateFlow(HomeScreenState())
     val homeScreenState = _homeScreenState.asStateFlow()
 
+    private val _sharedWishlistState = MutableStateFlow(GetAllFavState())
+    val sharedWishlistState: StateFlow<GetAllFavState> = _sharedWishlistState
+
+    private val firebaseFirestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    fun deleteComment(ownerId: String, productId: String, comment: CommentModel) {
+        val commentRef = firebaseFirestore.collection(ADD_TO_FAV)
+            .document(ownerId)
+            .collection("User_Fav")
+            .document(productId)
+            .collection("comments")
+
+        commentRef
+            .whereEqualTo("text", comment.text)
+            .whereEqualTo("user", comment.user)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                for (doc in snapshot.documents) {
+                    doc.reference.delete()
+                }
+            }
+    }
+
+
+    fun addCommentToProduct(userId: String, productId: String, comment: CommentModel) {
+        firebaseFirestore.collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
+            .collection("comments")
+            .add(comment)
+            .addOnSuccessListener { documentReference ->
+                Log.d("COMMENT", "Comment added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { exception ->
+                Log.e("COMMENT", "Failed to add comment: ${exception.message}")
+            }
+    }
+
+    fun getComments(userId: String, productId: String): Flow<List<CommentModel>> = callbackFlow {
+        val ref = firebaseFirestore.collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
+            .collection("comments")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+
+        val listener = ref.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            val comments = snapshot?.documents?.mapNotNull { document ->
+                document.toObject(CommentModel::class.java)
+            } ?: emptyList()
+
+            trySend(comments).isSuccess
+        }
+
+        awaitClose { listener.remove() }
+    }
+
+    fun likeProduct(userId: String, productId: String) {
+        val productRef = firebaseFirestore
+            .collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
+
+        firebaseFirestore.runTransaction { transaction ->
+            val snapshot = transaction.get(productRef)
+            val likes = snapshot.get("likes") as? Map<*, *> ?: emptyMap<String, Any>()
+            val likedBy = (likes["likedBy"] as? List<String>)?.toMutableList() ?: mutableListOf()
+            val totalLikes = (likes["total"] as? Long) ?: 0L
+            val currentUserId = firebaseAuth.currentUser?.uid ?: ""
+
+            if (likedBy.contains(currentUserId)) {
+                // Unlike
+                likedBy.remove(currentUserId)
+                transaction.update(productRef, mapOf(
+                    "likes.likedBy" to likedBy,
+                    "likes.total" to (totalLikes - 1)
+                ))
+            } else {
+                // Like
+                likedBy.add(currentUserId)
+                transaction.update(productRef, mapOf(
+                    "likes.likedBy" to likedBy,
+                    "likes.total" to (totalLikes + 1)
+                ))
+            }
+        }.addOnSuccessListener {
+            Log.d("LIKE", "Successfully liked/unliked")
+        }.addOnFailureListener {
+            Log.e("LIKE", "Failed: ${it.message}")
+        }
+    }
+
+
+
+    fun getSharedWishlist(userId: String) {
+        viewModelScope.launch {
+            repo.getWishlistForUser(userId).collect { result ->
+                when (result) {
+                    is ResultState.Loading -> {
+                        _sharedWishlistState.value =
+                            _sharedWishlistState.value.copy(isLoading = true)
+                    }
+
+                    is ResultState.Success -> {
+                        _sharedWishlistState.value = _sharedWishlistState.value.copy(
+                            isLoading = false,
+                            userData = result.data
+                        )
+                    }
+
+                    is ResultState.Error -> {
+                        _sharedWishlistState.value = _sharedWishlistState.value.copy(
+                            isLoading = false,
+                            errorMessages = result.message
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun generateWishlistShareLink(
+        userId: String,
+        onSuccess: (String) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        val wishlistUri = Uri.parse("https://wearit.page.link/wishlist?userId=$userId")
+
+        Firebase.dynamicLinks.shortLinkAsync {
+            link = wishlistUri
+            domainUriPrefix = "https://wearit.page.link"
+            androidParameters { }
+        }.addOnSuccessListener { result ->
+            val shortLink = result.shortLink
+            if (shortLink != null) {
+                onSuccess(shortLink.toString())
+            }
+        }.addOnFailureListener {
+            onError(it)
+        }
+    }
+
+
     fun removeFromFav(productId: String) {
         Log.d("WISHLIST_VIEWMODEL", "Attempting to remove $productId from fav")
         viewModelScope.launch {
@@ -119,9 +283,11 @@ class ECommerceAppViewModel @Inject constructor(
                         Log.d("WISHLIST_VIEWMODEL", "Successfully removed $productId")
                         getAllFav() // Refresh UI
                     }
+
                     is ResultState.Error -> {
                         Log.e("WISHLIST_VIEWMODEL", "Error removing $productId: ${it.message}")
                     }
+
                     else -> Unit
                 }
             }
@@ -259,8 +425,7 @@ class ECommerceAppViewModel @Inject constructor(
         }
     }
 
-    fun getCart()
-    {
+    fun getCart() {
         viewModelScope.launch {
             getCartUseCase.getCart().collect {
                 when (it) {
