@@ -1,8 +1,7 @@
 package com.example.ecommerceapp.presentation.Navigation
 
-import android.app.Activity
 import android.net.Uri
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -20,7 +18,9 @@ import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
@@ -57,9 +56,7 @@ import com.example.ecommerceapp.presentation.Screens.GetAllProduct
 import com.example.ecommerceapp.presentation.Screens.HomeScreenUI
 import com.example.ecommerceapp.presentation.Screens.ProfilesScreenUI
 import com.example.ecommerceapp.presentation.Screens.SharedWishlistScreen
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.dynamiclinks.dynamicLinks
 
 
 data class BottomNavItem(val name: String, val icon: ImageVector, val unselectedIcon: ImageVector)
@@ -103,12 +100,9 @@ fun App(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            bottom = WindowInsets.navigationBars.asPaddingValues()
-                                .calculateBottomPadding()
-                        )
-
-                ) {
+                        .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                )
+                {
                     AnimatedBottomBar(
                         selectedItem = selectedItem,
                         itemSize = BottomNavItem.size,

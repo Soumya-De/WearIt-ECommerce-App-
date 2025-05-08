@@ -3,7 +3,10 @@ package com.example.ecommerceapp.presentation.Screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,7 +87,14 @@ fun EachProductDetailsScreen(
                 scrollBehavior = scrollBehavior
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues -> // Use paddingValues here
+        // Adjust padding to remove the bottom space
+        val adjustedPadding = PaddingValues(
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+            top = paddingValues.calculateTopPadding(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+            bottom = 0.dp // Remove the bottom padding
+        )
         when {
             getProductByIdState.value.isLoading -> {
                 Box(
@@ -103,7 +114,7 @@ fun EachProductDetailsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(adjustedPadding)
                         .verticalScroll(rememberScrollState())
                 ) {
                     Box(modifier = Modifier.height(300.dp)) {

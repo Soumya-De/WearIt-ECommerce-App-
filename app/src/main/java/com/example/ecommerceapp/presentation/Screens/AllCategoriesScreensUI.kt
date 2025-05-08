@@ -3,6 +3,9 @@ package com.example.ecommerceapp.presentation.Screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,10 +58,8 @@ fun AllCategoriesScreen(
         viewModel.getAllCategories()
 
     }
-    Scaffold(
-        Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
+    Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
             TopAppBar(
                 title = { Text(text = "All Categories") },
                 navigationIcon = {
@@ -67,7 +69,16 @@ fun AllCategoriesScreen(
                 },
                 scrollBehavior = scrollBehavior
             )
-        }) { innerpadding ->
+        }
+    ) { paddingValues ->
+
+        // Adjust padding values to ignore bottom padding
+        val adjustedPadding = PaddingValues(
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+            top = paddingValues.calculateTopPadding(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+            bottom = 0.dp // Exclude bottom padding to prevent the gap
+        )
         when {
             state.value.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -90,7 +101,7 @@ fun AllCategoriesScreen(
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = innerpadding,
+                    contentPadding = adjustedPadding,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(categories) { category ->

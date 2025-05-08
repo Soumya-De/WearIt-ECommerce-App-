@@ -11,8 +11,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -47,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
@@ -145,13 +149,20 @@ fun ProfilesScreenUI(
         Text(text = profileScreenState.value.errorMessages!!)
 
     } else if (profileScreenState.value.userData != null) {
-        Scaffold() { innerpadding ->
+        Scaffold { paddingValues ->
+            // Adjust padding values to ignore bottom padding
+            val adjustedPadding = PaddingValues(
+                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                top = paddingValues.calculateTopPadding(),
+                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                bottom = 0.dp // Exclude bottom padding to prevent the gap
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(innerpadding)
-                    .padding(16.dp),
+                    .padding(adjustedPadding)
+                    .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.Top
             )
             {

@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +48,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,11 +79,19 @@ fun HomeScreenUI(navController: NavController, viewModel: ECommerceAppViewModel 
             Text(text = homeState.errorMessages!!)
         }
     } else {
-        Scaffold() { innerpadding ->
+        Scaffold { paddingValues ->
+            // Adjust padding values to ignore bottom padding
+            val adjustedPadding = PaddingValues(
+                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                top = paddingValues.calculateTopPadding(),
+                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                bottom = 0.dp // Exclude bottom padding to prevent the gap
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerpadding)
+                    .padding(adjustedPadding)
                     .verticalScroll(rememberScrollState())
             ) {
                 Row(

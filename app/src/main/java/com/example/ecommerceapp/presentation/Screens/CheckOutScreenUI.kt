@@ -3,8 +3,11 @@ package com.example.ecommerceapp.presentation.Screens
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ecommerceapp.presentation.viewModels.ECommerceAppViewModel
 import androidx.navigation.NavController
@@ -98,7 +102,15 @@ fun CheckOutScreen(
                 }
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues ->
+
+        // Adjust padding values to ignore bottom padding
+        val adjustedPadding = PaddingValues(
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+            top = paddingValues.calculateTopPadding(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+            bottom = 0.dp // Exclude bottom padding to prevent the gap
+        )
         when {
             state.value.isLoading -> {
                 Box(
@@ -132,7 +144,7 @@ fun CheckOutScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(adjustedPadding)
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
                 ) {
