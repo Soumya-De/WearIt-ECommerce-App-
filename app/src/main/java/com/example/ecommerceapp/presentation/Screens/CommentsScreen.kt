@@ -63,9 +63,9 @@ fun CommentsScreen(
 
 
     LaunchedEffect(productId) {
-        viewModel.getComments(ownerId, productId).collect {
+        viewModel.getComments(productId).collect { comments ->
             commentList.clear()
-            commentList.addAll(it)
+            commentList.addAll(comments)
         }
     }
 
@@ -90,7 +90,7 @@ fun CommentsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                //.padding(16.dp)
         ) {
 
             LazyColumn(
@@ -160,10 +160,10 @@ fun CommentsScreen(
                                     val firstName = documentSnapshot.getString("firstName") ?: "Guest"
 
                                     viewModel.addCommentToProduct(
-                                        userId = ownerId,
                                         productId = productId,
                                         comment = CommentModel(text = input, user = firstName)
                                     )
+
                                     input = ""
                                 }
                                 .addOnFailureListener {

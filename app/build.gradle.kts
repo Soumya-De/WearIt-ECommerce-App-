@@ -2,9 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp) // ✅ Use alias for KSP
-    id("com.google.dagger.hilt.android") // ✅ Apply Hilt plugin in app module
-    kotlin("plugin.serialization") version "2.0.0"
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
+    kotlin("plugin.serialization") version libs.versions.kotlin.get()
     alias(libs.plugins.google.gms.google.services)
 }
 
@@ -23,6 +23,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

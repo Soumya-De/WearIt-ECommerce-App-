@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.ecommerceapp.domain.models.ProductDataModels
@@ -33,7 +35,11 @@ import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SharedWishlistScreen(userId: String, navController: NavController, viewModel: ECommerceAppViewModel = hiltViewModel()) {
+fun SharedWishlistScreen(
+    userId: String,
+    navController: NavController,
+    viewModel: ECommerceAppViewModel = hiltViewModel()
+) {
     val sharedWishlistState = viewModel.sharedWishlistState.collectAsStateWithLifecycle()
     LaunchedEffect(userId) {
         viewModel.getSharedWishlist(userId)
@@ -51,28 +57,40 @@ fun SharedWishlistScreen(userId: String, navController: NavController, viewModel
                 }
             )
         }
-    ) { innerPadding ->
+    ) { paddingValues -> // Use paddingValues here
+        // Adjust padding to remove the bottom space
+        val adjustedPadding = PaddingValues(
+            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+            top = paddingValues.calculateTopPadding(),
+            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+            bottom = 0.dp // Remove the bottom padding
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+                .padding(adjustedPadding) // Apply the adjusted padding
+        )
+        {
             when {
                 sharedWishlistState.value.isLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
+
                 sharedWishlistState.value.errorMessages != null -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = sharedWishlistState.value.errorMessages ?: "Unknown error")
                     }
                 }
+
                 sharedWishlistState.value.userData.isNullOrEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("No items in shared wishlist")
                     }
                 }
+
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
@@ -84,9 +102,9 @@ fun SharedWishlistScreen(userId: String, navController: NavController, viewModel
                             val commentList = remember { mutableStateListOf<CommentModel>() }
 
                             LaunchedEffect(product.productId) {
-                                viewModel.getComments(userId, product.productId).collect {
+                                viewModel.getComments(product.productId).collect { comments ->
                                     commentList.clear()
-                                    commentList.addAll(it)
+                                    commentList.addAll(comments)
                                 }
                             }
 
@@ -102,7 +120,11 @@ fun SharedWishlistScreen(userId: String, navController: NavController, viewModel
                                     navController = navController, // pass here
                                     commentCount = commentList.size,
                                     onProductClick = {
-                                        navController.navigate(Routes.EachProductDetailsScreen(product.productId))
+                                        navController.navigate(
+                                            Routes.EachProductDetailsScreen(
+                                                product.productId
+                                            )
+                                        )
                                     }
                                 )
                             }
@@ -113,6 +135,7 @@ fun SharedWishlistScreen(userId: String, navController: NavController, viewModel
         }
     }
 }
+
 @Composable
 fun ReadOnlyProductCard(
     product: ProductDataModels,
@@ -169,10 +192,13 @@ fun ReadOnlyProductCard(
                         IconButton(onClick = {
                             viewModel.likeProduct(userId, product.productId)
                         }) {
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                            val isLiked = (product.likes?.get("likedBy") as? List<*>)?.contains(currentUserId) == true
+
                             Icon(
-                                Icons.Default.Favorite,
+                                imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                                 contentDescription = "Like",
-                                tint = Color.Red
+                                tint = if (isLiked) Color.Red else Color.Gray
                             )
                         }
                         Text(
@@ -183,7 +209,12 @@ fun ReadOnlyProductCard(
 
                     TextButton(
                         onClick = {
-                            navController.navigate(Routes.CommentsScreen(productId = product.productId, ownerId = userId))
+                            navController.navigate(
+                                Routes.CommentsScreen(
+                                    productId = product.productId,
+                                    ownerId = userId
+                                )
+                            )
                         }
                     ) {
                         Text("💬 $commentCount")
@@ -229,7 +260,9 @@ fun CommentsSection(
                     input = ""
                 }
             },
-            modifier = Modifier.align(Alignment.End).padding(top = 4.dp)
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(top = 4.dp)
         ) {
             Text("Send")
         }

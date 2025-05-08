@@ -5,6 +5,7 @@ import com.example.ecommerceapp.common.ResultState
 import com.example.ecommerceapp.domain.models.BannerDataModels
 import com.example.ecommerceapp.domain.models.CartDataModels
 import com.example.ecommerceapp.domain.models.CategoryDataModels
+import com.example.ecommerceapp.domain.models.CommentModel
 import com.example.ecommerceapp.domain.models.ProductDataModels
 import com.example.ecommerceapp.domain.models.UserData
 import com.example.ecommerceapp.domain.models.UserDataParent
@@ -34,5 +35,7 @@ interface Repo {
     fun getAllSuggestedProducts(): Flow<ResultState<List<ProductDataModels>>>
     fun getWishlistForUser(userId: String): Flow<ResultState<List<ProductDataModels>>>
     fun likeProduct(userId: String, productId: String): Flow<ResultState<Unit>>
+    fun getComments(userId: String, productId: String): Flow<List<CommentModel>>
+    fun getProductLikes(userId: String, productId: String): Flow<Map<String, Any>>
 }
 

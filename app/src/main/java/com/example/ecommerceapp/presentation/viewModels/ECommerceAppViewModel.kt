@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import com.example.ecommerceapp.common.ADD_TO_FAV
+import com.example.ecommerceapp.common.ALL_PRODUCTS
 import com.example.ecommerceapp.domain.models.CommentModel
 import com.example.ecommerceapp.domain.repo.Repo
 import com.google.firebase.Firebase
@@ -147,12 +148,10 @@ class ECommerceAppViewModel @Inject constructor(
     }
 
 
-    fun addCommentToProduct(userId: String, productId: String, comment: CommentModel) {
-        firebaseFirestore.collection(ADD_TO_FAV)
-            .document(userId)
-            .collection("User_Fav")
+    fun addCommentToProduct(productId: String, comment: CommentModel) {
+        firebaseFirestore.collection(ALL_PRODUCTS)
             .document(productId)
-            .collection("comments")
+            .collection("comments") // Sub-collection under product
             .add(comment)
             .addOnSuccessListener { documentReference ->
                 Log.d("COMMENT", "Comment added with ID: ${documentReference.id}")
@@ -162,10 +161,8 @@ class ECommerceAppViewModel @Inject constructor(
             }
     }
 
-    fun getComments(userId: String, productId: String): Flow<List<CommentModel>> = callbackFlow {
-        val ref = firebaseFirestore.collection(ADD_TO_FAV)
-            .document(userId)
-            .collection("User_Fav")
+    fun getComments(productId: String): Flow<List<CommentModel>> = callbackFlow {
+        val ref = firebaseFirestore.collection(ALL_PRODUCTS)
             .document(productId)
             .collection("comments")
             .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -186,10 +183,11 @@ class ECommerceAppViewModel @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-    fun likeProduct(userId: String, productId: String) {
+
+    fun likeProduct(ownerId: String, productId: String) {
         val productRef = firebaseFirestore
             .collection(ADD_TO_FAV)
-            .document(userId)
+            .document(ownerId)
             .collection("User_Fav")
             .document(productId)
 
@@ -216,13 +214,20 @@ class ECommerceAppViewModel @Inject constructor(
                 ))
             }
         }.addOnSuccessListener {
-            Log.d("LIKE", "Successfully liked/unliked")
+            Log.d("LIKE_SHARED", "Like updated in shared wishlist.")
         }.addOnFailureListener {
-            Log.e("LIKE", "Failed: ${it.message}")
+            Log.e("LIKE_SHARED", "Failed: ${it.message}")
         }
     }
 
 
+    fun getMainUserComments(userId: String, productId: String): Flow<List<CommentModel>> {
+        return repo.getComments(userId, productId)
+    }
+
+    fun getMainUserLikes(userId: String, productId: String): Flow<Map<String, Any>> {
+        return repo.getProductLikes(userId, productId)
+    }
 
     fun getSharedWishlist(userId: String) {
         viewModelScope.launch {

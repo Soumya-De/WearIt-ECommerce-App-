@@ -10,12 +10,14 @@ import com.example.ecommerceapp.common.ADD_TO_FAV
 import com.example.ecommerceapp.domain.models.BannerDataModels
 import com.example.ecommerceapp.domain.models.CartDataModels
 import com.example.ecommerceapp.domain.models.CategoryDataModels
+import com.example.ecommerceapp.domain.models.CommentModel
 import com.example.ecommerceapp.domain.models.ProductDataModels
 import com.example.ecommerceapp.domain.models.UserData
 import com.example.ecommerceapp.domain.models.UserDataParent
 import com.example.ecommerceapp.domain.repo.Repo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +28,34 @@ import javax.inject.Inject
 class RepoImpl @Inject constructor(
     var firebaseAuth: FirebaseAuth, var firebaseFirestore: FirebaseFirestore
 ) : Repo {
+
+    override fun getComments(userId: String, productId: String): Flow<List<CommentModel>> {
+        return firebaseFirestore.collection("ADD_TO_FAV")
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
+            .collection("comments")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .let { ref ->
+                callbackFlow {
+                    val listener = ref.addSnapshotListener { snapshot, error ->
+                        if (error != null) {
+                            close(error)
+                            return@addSnapshotListener
+                        }
+
+                        val comments = snapshot?.documents?.mapNotNull {
+                            it.toObject(CommentModel::class.java)
+                        } ?: emptyList()
+
+                        trySend(comments).isSuccess
+                    }
+
+                    awaitClose { listener.remove() }
+                }
+            }
+    }
+
 
     override fun getWishlistForUser(userId: String): Flow<ResultState<List<ProductDataModels>>> = callbackFlow {
         trySend(ResultState.Loading)
@@ -130,6 +160,27 @@ class RepoImpl @Inject constructor(
             close()
         }
     }
+
+    override fun getProductLikes(userId: String, productId: String): Flow<Map<String, Any>> = callbackFlow {
+        val docRef = firebaseFirestore
+            .collection("ADD_TO_FAV")
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
+
+        val listener = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            val likes = snapshot?.get("likes") as? Map<String, Any> ?: emptyMap()
+            trySend(likes).isSuccess
+        }
+
+        awaitClose { listener.remove() }
+    }
+
 
     override fun updateUserData(userDataParent: UserDataParent): Flow<ResultState<String>> =
         callbackFlow {

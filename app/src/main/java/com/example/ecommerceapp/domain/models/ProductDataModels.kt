@@ -11,7 +11,7 @@ data class ProductDataModels(
     val createdBy: String = "",
     val avilableUnits: Int = 0,
     var productId: String = "",
-    val likes: Map<String, Int>? = null // New property for tracking likes
+    var likes: Map<String, Any>? = null // New property for tracking likes
 ) {
     constructor() : this("", "", "", "", "", "", 0L, "", 0, "", null)
 }
