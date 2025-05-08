@@ -201,17 +201,21 @@ class ECommerceAppViewModel @Inject constructor(
             if (likedBy.contains(currentUserId)) {
                 // Unlike
                 likedBy.remove(currentUserId)
-                transaction.update(productRef, mapOf(
-                    "likes.likedBy" to likedBy,
-                    "likes.total" to (totalLikes - 1)
-                ))
+                transaction.update(
+                    productRef, mapOf(
+                        "likes.likedBy" to likedBy,
+                        "likes.total" to (totalLikes - 1)
+                    )
+                )
             } else {
                 // Like
                 likedBy.add(currentUserId)
-                transaction.update(productRef, mapOf(
-                    "likes.likedBy" to likedBy,
-                    "likes.total" to (totalLikes + 1)
-                ))
+                transaction.update(
+                    productRef, mapOf(
+                        "likes.likedBy" to likedBy,
+                        "likes.total" to (totalLikes + 1)
+                    )
+                )
             }
         }.addOnSuccessListener {
             Log.d("LIKE_SHARED", "Like updated in shared wishlist.")
@@ -280,23 +284,39 @@ class ECommerceAppViewModel @Inject constructor(
 
 
     fun removeFromFav(productId: String) {
-        Log.d("WISHLIST_VIEWMODEL", "Attempting to remove $productId from fav")
-        viewModelScope.launch {
-            addToFavUseCase.removeFromFav(productId).collect {
-                when (it) {
-                    is ResultState.Success -> {
-                        Log.d("WISHLIST_VIEWMODEL", "Successfully removed $productId")
-                        getAllFav() // Refresh UI
-                    }
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        val favRef = firebaseFirestore
+            .collection(ADD_TO_FAV)
+            .document(userId)
+            .collection("User_Fav")
+            .document(productId)
 
-                    is ResultState.Error -> {
-                        Log.e("WISHLIST_VIEWMODEL", "Error removing $productId: ${it.message}")
-                    }
+        // 1. Delete all comments under this product first
+        favRef.collection("comments")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val batch = firebaseFirestore.batch()
+                for (doc in snapshot.documents) {
+                    batch.delete(doc.reference)
+                }
+                batch.commit().addOnSuccessListener {
+                    Log.d("REMOVE_FAV", "Comments deleted")
 
-                    else -> Unit
+                    favRef.update("likes", mapOf("total" to 0, "likedBy" to emptyList<String>()))
+
+                    // 2. Now delete the product itself
+                    favRef.delete()
+                        .addOnSuccessListener {
+                            Log.d("REMOVE_FAV", "Product deleted from wishlist")
+                        }
+                        .addOnFailureListener {
+                            Log.e("REMOVE_FAV", "Failed to delete product: ${it.message}")
+                        }
                 }
             }
-        }
+            .addOnFailureListener {
+                Log.e("REMOVE_FAV", "Failed to fetch comments for deletion: ${it.message}")
+            }
     }
 
 
