@@ -143,7 +143,6 @@ fun App(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(bottom = if (shouldShowBottomBar.value) 60.dp else 0.dp)
         ) {
             //val context = LocalContext.current
 
